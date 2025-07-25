@@ -10,67 +10,63 @@ let products: ProductTuple[] = [
     ["Lodówka", "AGD", 2000, true, 22],
   ];
 
-  function getAvailableProducts(): ProductTuple[] {
+  function getAvailableProducts(products: ProductTuple[]): ProductTuple[] {
     return products.filter(prod => prod[3])
   }
 
-  console.log(getAvailableProducts())
+  console.log(getAvailableProducts(products))
 
-  function getProductsByCategory(category: string): ProductTuple[] {
+  function getProductsByCategory(products: ProductTuple[], category: string): ProductTuple[] {
     return products.filter(product => product[1] === category)
   }
 
-  console.log(getProductsByCategory("Elektronika"));
+  console.log(getProductsByCategory(products, "Elektronika"));
 
 
-  function getAveragePriceByCategory(category: string): number {
-  let productsByCategory = products.filter(product => product[1] === category)
+  function getAveragePriceByCategory(products: ProductTuple[], category: string): number {
+  let productsByCategory = products.filter(([name, categoryName, price, isAvailable, sales]) => categoryName === category);
+
   if (productsByCategory.length === 0) {
     return 0; 
   }
   const total = productsByCategory.reduce((sum, product) => sum + product[2], 0);
   return total / productsByCategory.length;
   }
-  console.log(getAveragePriceByCategory("Elektronika"));
+  console.log("getAveragePrice", getAveragePriceByCategory(products, "Elektronika"));
 
 
-  const sortIndexMap = {
-    name: 0,
-    price: 2,
-    sales: 4
+  enum SortIndex  {
+    Name = 0,
+    Price = 2,
+    Sales = 4
   };
 
-
   function sortProducts(
+    products: ProductTuple[],
     category: string,
-    sortBy: "name" | "price" | "sales",
+    sortBy: SortIndex,
     direction: "asc" | "desc"
   ): ProductTuple[] {
     const filtered = products.filter(product => product[1] === category);
-  const index = sortIndexMap[sortBy];
+    const multiplier = direction === "asc" ? 1 : -1;
   
-  return filtered.sort((a, b) => {
-    const aValue = a[index];
-    const bValue = b[index];
-    if (typeof aValue === "string" && typeof bValue === "string") {
-        if (direction === "asc") {
-          if (aValue > bValue) return 1;
-          if (aValue < bValue) return -1;
-          return 0;
-        } else {
-          if (aValue < bValue) return 1;
-          if (aValue > bValue) return -1;
-          return 0;
-        }
+    return filtered.sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+  
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        if (aValue > bValue) return 1 * multiplier;
+        if (aValue < bValue) return -1 * multiplier;
+        return 0;
       }
-      
+  
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return (aValue - bValue) * multiplier;
+      }
+  
+      return 0;
+    });
+  }
+  
 
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return direction === "asc" ? aValue - bValue : bValue - aValue;
-    }
-
-    return 0; 
-  });
-}
-
-  console.log(sortProducts("Elektronika","name", "asc"));
+  console.log("SORTpRODUCT", sortProducts(products, "Elektronika", SortIndex.Name, "asc"));
